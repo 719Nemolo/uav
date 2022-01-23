@@ -218,20 +218,20 @@ void Copter::get_scheduler_tasks(const AP_Scheduler::Task *&tasks,
 
 constexpr int8_t Copter::_failsafe_priorities[7];
 
-// Main loop - 400hz
+// 主循环 以400hz频率运行
 void Copter::fast_loop()
 {
-    // update INS immediately to get current gyro data populated
+    // 更新INS以获取加速度计和陀螺仪返回的数据
     ins.update();
 
-    // run low level rate controllers that only require IMU data
+    // 运行只需要IMU数据的低频姿态控制run low level rate controllers that only require IMU data
     attitude_control->rate_controller_run();
 
-    // send outputs to the motors library immediately
+    // 设置电机输出
     motors_output();
 
     // run EKF state estimator (expensive)
-    // --------------------
+    // 读取卡尔曼滤波状态估计
     read_AHRS();
 
 #if FRAME_CONFIG == HELI_FRAME
@@ -242,27 +242,27 @@ void Copter::fast_loop()
 #endif //HELI_FRAME
 
     // Inertial Nav
-    // --------------------
+    // 读取位姿信息
     read_inertia();
 
-    // check if ekf has reset target heading or position
+    // 检查ekf是否重新设定目标方向和位置
     check_ekf_reset();
 
-    // run the attitude controllers
+    // 更新飞行模式并运行姿态控制器
     update_flight_mode();
 
-    // update home from EKF if necessary
+    // 更新起飞位置
     update_home_from_EKF();
 
-    // check if we've landed or crashed
+    // 开启落地和撞毁检测
     update_land_and_crash_detectors();
 
 #if HAL_MOUNT_ENABLED
-    // camera mount's fast update
+    // camera mount's fast update   控制无关
     camera_mount.update_fast();
 #endif
 
-    // log sensor health
+    // log sensor health    日志相关
     if (should_log(MASK_LOG_ANY)) {
         Log_Sensor_Health();
     }
